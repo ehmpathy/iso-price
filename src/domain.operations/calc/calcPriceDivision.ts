@@ -1,4 +1,4 @@
-import { Price } from '../../domain/objects/Price';
+import { Price } from '@src/domain.objects/Price';
 
 export const calcPriceDivision = (input: {
   price: Price;

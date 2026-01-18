@@ -1,6 +1,6 @@
 import { UnexpectedCodePathError } from 'helpful-errors';
 
-import { Price } from '../../domain/objects/Price';
+import { Price } from '@src/domain.objects/Price';
 
 /**
  * .ref = https://stackoverflow.com/a/77664868/3068233
@@ -10,7 +10,7 @@ const calcStandardDeviation = (array: number[]): number | null => {
   const n = array.length;
   const mean = array.reduce((a, b) => a + b) / n;
   return Math.sqrt(
-    array.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / (n - 1),
+    array.map((x) => (x - mean) ** 2).reduce((a, b) => a + b) / (n - 1),
   );
 };
 

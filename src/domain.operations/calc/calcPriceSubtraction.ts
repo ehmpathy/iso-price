@@ -1,6 +1,6 @@
 import { UnexpectedCodePathError } from 'helpful-errors';
 
-import { Price } from '../../domain/objects/Price';
+import { Price } from '@src/domain.objects/Price';
 
 export const calcPriceSubtraction = (...input: [Price, Price]): Price => {
   if (input[0].currency !== input[1].currency)

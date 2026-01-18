@@ -1,6 +1,6 @@
 import { BadRequestError, UnexpectedCodePathError } from 'helpful-errors';
 
-import { Price } from '../../domain/objects/Price';
+import { Price } from '@src/domain.objects/Price';
 
 /**
  * .what = extracts the price out of word it is defined in

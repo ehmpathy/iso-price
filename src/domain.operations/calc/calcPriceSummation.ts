@@ -1,6 +1,6 @@
 import { UnexpectedCodePathError } from 'helpful-errors';
 
-import { Price } from '../../domain/objects/Price';
+import { Price } from '@src/domain.objects/Price';
 
 export const calcPriceSummation = (prices: Price[]): Price => {
   // if no prices, throw error, invalid request

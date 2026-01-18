@@ -1,4 +1,4 @@
-import { Price } from '../../domain/objects/Price';
+import type { Price } from '@src/domain.objects/Price';
 
 export const asPriceWord = (
   price: Price,

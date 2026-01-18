@@ -1,5 +1,5 @@
-import { isOfCurrency } from '../../domain/constants/Currency';
-import { Price } from '../../domain/objects/Price';
+import { isOfCurrency } from '@src/domain.objects/constants/Currency';
+import type { Price } from '@src/domain.objects/Price';
 
 export const isAPrice = (val: unknown): val is Price =>
   typeof val === 'object' &&
