@@ -1,7 +1,8 @@
 import { UnexpectedCodePathError } from 'helpful-errors';
 import { getError } from 'test-fns';
 
-import { Price } from '../../domain/objects/Price';
+import { Price } from '@src/domain.objects/Price';
+
 import { ofPriceWord } from './ofPriceWord';
 
 describe('ofPriceWord', () => {
@@ -30,14 +31,14 @@ describe('ofPriceWord', () => {
           expect(ofPriceWord(thisCase.input)).toEqual(thisCase.output);
         })
       : thisCase.error
-      ? it(`should throw an error for input '${thisCase.input}`, () => {
-          const error = getError(() => ofPriceWord(thisCase.input));
-          expect(error.message).toContain(thisCase.error?.message);
-        })
-      : (() => {
-          throw new UnexpectedCodePathError(
-            'neither output nor error were specified in the test case',
-          );
-        })(),
+        ? it(`should throw an error for input '${thisCase.input}`, () => {
+            const error = getError(() => ofPriceWord(thisCase.input));
+            expect(error.message).toContain(thisCase.error?.message);
+          })
+        : (() => {
+            throw new UnexpectedCodePathError(
+              'neither output nor error were specified in the test case',
+            );
+          })(),
   );
 });

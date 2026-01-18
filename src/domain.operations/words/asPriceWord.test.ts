@@ -1,7 +1,8 @@
 import { given, then, when } from 'test-fns';
 
-import { Currency } from '../../domain/constants/Currency';
-import { Price } from '../../domain/objects/Price';
+import { Currency } from '@src/domain.objects/constants/Currency';
+import { Price } from '@src/domain.objects/Price';
+
 import { asPriceWord } from './asPriceWord';
 
 describe('asPriceWord', () => {

@@ -1,8 +1,8 @@
 import { DomainLiteral } from 'domain-objects';
 import Joi from 'joi';
-import { Literalize } from 'type-fns';
+import type { Literalize } from 'type-fns';
 
-import { Currency } from '../constants/Currency';
+import { Currency } from './constants/Currency';
 
 const schema = Joi.object().keys({
   amount: Joi.number().min(0).required(),
