@@ -2,7 +2,7 @@
   "name": "iso-price",
   "author": "ehmpathy",
   "description": "type-safe price representation with sub-cent precision, iso 4217 currency support, and lossless arithmetic",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": "ehmpathy/iso-price",
   "homepage": "https://github.com/ehmpathy/iso-price",
   "keywords": [
