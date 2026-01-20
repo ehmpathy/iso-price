@@ -1,6 +1,7 @@
 import { BadRequestError } from 'helpful-errors';
 
 import type { IsoPrice } from '../../domain.objects/IsoPrice';
+import type { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
 import type { IsoPriceWords } from '../../domain.objects/IsoPriceWords';
 import { isIsoPriceHuman } from '../guard/isIsoPriceHuman';
 import { asIsoPriceWords } from './asIsoPriceWords';
@@ -89,7 +90,11 @@ export const asIsoPrice = <TCurrency extends string = string>(
   input:
     | IsoPrice<TCurrency>
     | string
-    | { amount: number | bigint; currency: TCurrency; exponent?: string },
+    | {
+        amount: number | bigint;
+        currency: TCurrency;
+        exponent?: IsoPriceExponent;
+      },
   options?: { currency?: TCurrency },
 ): IsoPriceWords<TCurrency> => {
   // validate symbol/currency consistency for human format

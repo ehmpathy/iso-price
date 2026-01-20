@@ -39,4 +39,24 @@ describe('IsoPriceWords', () => {
     const hasBrand: BrandCheck = true;
     expect(hasBrand).toEqual(true);
   });
+
+  describe('.ts-expect-error', () => {
+    test('rejects plain string assignment at compile time', () => {
+      // @ts-expect-error - plain string is not assignable to branded type
+      const _price: IsoPriceWords = 'USD 50.37';
+      expect(_price).toBeDefined();
+    });
+
+    test('rejects number assignment at compile time', () => {
+      // @ts-expect-error - number is not assignable to branded string type
+      const _price: IsoPriceWords = 50.37;
+      expect(_price).toBeDefined();
+    });
+
+    test('accepts valid branded cast', () => {
+      // this should compile without error - cast is allowed
+      const price: IsoPriceWords = 'USD 50.37' as IsoPriceWords;
+      expect(price).toEqual('USD 50.37');
+    });
+  });
 });

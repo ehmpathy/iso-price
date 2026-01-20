@@ -61,11 +61,11 @@ describe('isIsoPriceWords', () => {
       given: { input: 'BHD 1.234' },
       expect: { output: true },
     },
-    // comma separators accepted for input convenience
+    // comma separators rejected (use asIsoPrice to normalize)
     {
-      description: 'comma separators (valid)',
+      description: 'comma separators (invalid)',
       given: { input: 'USD 1,000,000.00' },
-      expect: { output: true },
+      expect: { output: false },
     },
     // invalid words format
     {

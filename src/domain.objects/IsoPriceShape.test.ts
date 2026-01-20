@@ -49,8 +49,8 @@ describe('IsoPriceShape', () => {
     expect(usdShape.currency).toEqual('USD');
   });
 
-  test('interface accepts explicit exponent type', () => {
-    const microShape: IsoPriceShape<string, IsoPriceExponent.MICRO> = {
+  test('interface accepts enum exponent', () => {
+    const microShape: IsoPriceShape = {
       amount: 3n,
       currency: 'USD',
       exponent: IsoPriceExponent.MICRO,
@@ -66,5 +66,35 @@ describe('IsoPriceShape', () => {
     };
 
     expect(shape.exponent).toBeUndefined();
+  });
+
+  describe('.ts-expect-error', () => {
+    test('rejects number amount at compile time', () => {
+      // @ts-expect-error - amount must be bigint, not number
+      const _shape: IsoPriceShape = { amount: 5037, currency: 'USD' };
+      expect(_shape).toBeDefined(); // runtime passes, but compile fails
+    });
+
+    test('rejects absent currency at compile time', () => {
+      // @ts-expect-error - currency is required
+      const _shape: IsoPriceShape = { amount: 5037n };
+      expect(_shape).toBeDefined();
+    });
+
+    test('rejects absent amount at compile time', () => {
+      // @ts-expect-error - amount is required
+      const _shape: IsoPriceShape = { currency: 'USD' };
+      expect(_shape).toBeDefined();
+    });
+
+    test('rejects invalid exponent at compile time', () => {
+      const _shape: IsoPriceShape = {
+        amount: 5037n,
+        currency: 'USD',
+        // @ts-expect-error - exponent must be IsoPriceExponent, not arbitrary string
+        exponent: 'invalid',
+      };
+      expect(_shape).toBeDefined();
+    });
   });
 });

@@ -49,4 +49,40 @@ describe('IsoPrice', () => {
 
     expect(prices).toHaveLength(3);
   });
+
+  describe('.type-assignability', () => {
+    test('IsoPriceWords is assignable to IsoPrice', () => {
+      const words: IsoPriceWords = 'USD 50.37' as IsoPriceWords;
+      const price: IsoPrice = words;
+      expect(price).toEqual('USD 50.37');
+    });
+
+    test('IsoPriceShape is assignable to IsoPrice', () => {
+      const shape: IsoPriceShape = { amount: 5037n, currency: 'USD' };
+      const price: IsoPrice = shape;
+      expect(price).toEqual({ amount: 5037n, currency: 'USD' });
+    });
+
+    test('IsoPriceHuman is assignable to IsoPrice', () => {
+      const human: IsoPriceHuman = '$50.37' as IsoPriceHuman;
+      const price: IsoPrice = human;
+      expect(price).toEqual('$50.37');
+    });
+  });
+
+  describe('.ts-expect-error', () => {
+    // helper that returns IsoPrice without type narrow
+    const getPrice = (): IsoPrice => 'USD 50.37' as IsoPriceWords;
+
+    test('IsoPrice union can be assigned to variants via type assertion', () => {
+      const price = getPrice();
+      // union can be narrowed via assertion when the caller knows the actual type
+      const _words: IsoPriceWords = price as IsoPriceWords;
+      const _shape: IsoPriceShape = price as unknown as IsoPriceShape;
+      const _human: IsoPriceHuman = price as unknown as IsoPriceHuman;
+      expect(_words).toBeDefined();
+      expect(_shape).toBeDefined();
+      expect(_human).toBeDefined();
+    });
+  });
 });

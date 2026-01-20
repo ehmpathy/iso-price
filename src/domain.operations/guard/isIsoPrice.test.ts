@@ -96,9 +96,9 @@ describe('isIsoPrice', () => {
       expect: { output: false },
     },
     {
-      description: 'words with commas (valid for input)',
+      description: 'words with commas (invalid - use asIsoPrice to normalize)',
       given: { input: 'USD 1,000.00' },
-      expect: { output: true },
+      expect: { output: false },
     },
     {
       description: 'nonsense string',

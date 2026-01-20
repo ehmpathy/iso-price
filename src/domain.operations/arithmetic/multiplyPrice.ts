@@ -10,7 +10,7 @@ import { asIsoPriceWords } from '../cast/asIsoPriceWords';
  * .what = gets the numeric exponent value from exponent string
  * .why = needed for precision scale
  */
-const getExponentValue = (exponent: IsoPriceExponent | string): number => {
+const getExponentValue = (exponent: IsoPriceExponent): number => {
   const match = exponent.match(/\^(-?\d+)$/);
   if (!match) return -2; // default to centi
   return parseInt(match[1]!, 10);
@@ -116,7 +116,7 @@ export function multiplyPrice<TCurrency extends string = string>(
   if (options?.format === 'shape') {
     return resultShape;
   }
-  return asIsoPriceWords(resultShape);
+  return asIsoPriceWords<TCurrency>(resultShape);
 }
 
 /**

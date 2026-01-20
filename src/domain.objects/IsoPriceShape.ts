@@ -15,22 +15,16 @@ import type { IsoPriceExponent } from './IsoPriceExponent';
  * { amount: 5037n, currency: 'USD' }
  *
  * // $0.000003 in micro-dollars (llm token cost)
- * { amount: 3n, currency: 'USD', exponent: 'micro.x10^-6' }
+ * { amount: 3n, currency: 'USD', exponent: IsoPriceExponent.MICRO }
  * ```
  *
  * @template TCurrency - the currency code type (defaults to `string`)
- * @template TExponent - the exponent type (defaults to `IsoPriceExponent`)
  */
-export interface IsoPriceShape<
-  TCurrency extends string = string,
-  TExponent extends IsoPriceExponent | `${IsoPriceExponent}` =
-    | IsoPriceExponent
-    | `${IsoPriceExponent}`,
-> {
+export interface IsoPriceShape<TCurrency extends string = string> {
   /** integer amount in minor units — always bigint for precision safety */
   amount: bigint;
   /** iso 4217 currency code or custom currency string */
   currency: TCurrency;
   /** explicit precision exponent — defaults to currency standard when omitted */
-  exponent?: TExponent;
+  exponent?: IsoPriceExponent;
 }

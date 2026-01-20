@@ -9,7 +9,7 @@ import { asIsoPriceShape } from './asIsoPriceShape';
  * .what = gets the decimal places for an exponent
  * .why = determines how to format the amount string
  */
-const getDecimalPlaces = (exponent: IsoPriceExponent | string): number => {
+const getDecimalPlaces = (exponent: IsoPriceExponent): number => {
   const match = exponent.match(/\^(-?\d+)$/);
   if (!match) return 2; // default to 2 decimal places
   return Math.abs(parseInt(match[1]!, 10));
@@ -37,7 +37,7 @@ const formatDecimalPart = (decPart: string): string => {
  */
 const formatAmount = (
   amount: bigint,
-  exponent: IsoPriceExponent | string = IsoPriceExponent.CENTI,
+  exponent: IsoPriceExponent = IsoPriceExponent.CENTI,
 ): string => {
   const decimalPlaces = getDecimalPlaces(exponent);
   const isNegative = amount < 0n;
@@ -97,7 +97,11 @@ const formatAmount = (
 export const asIsoPriceWords = <TCurrency extends string = string>(
   input:
     | IsoPrice<TCurrency>
-    | { amount: number | bigint; currency: TCurrency; exponent?: string }
+    | {
+        amount: number | bigint;
+        currency: TCurrency;
+        exponent?: IsoPriceExponent;
+      }
     | string,
   options?: { currency?: TCurrency },
 ): IsoPriceWords<TCurrency> => {

@@ -94,7 +94,7 @@ export function allocatePrice<TCurrency extends string = string>(
 const allocateEqualParts = <TCurrency extends string>(
   amount: bigint,
   currency: TCurrency,
-  exponent: IsoPriceExponent | string,
+  exponent: IsoPriceExponent,
   parts: number,
   remainderMode: AllocationRemainderMode,
   format?: 'words' | 'shape',
@@ -119,7 +119,7 @@ const allocateEqualParts = <TCurrency extends string>(
 const allocateByRatios = <TCurrency extends string>(
   amount: bigint,
   currency: TCurrency,
-  exponent: IsoPriceExponent | string,
+  exponent: IsoPriceExponent,
   ratios: number[],
   remainderMode: AllocationRemainderMode,
   format?: 'words' | 'shape',
@@ -269,7 +269,7 @@ const getDistributionIndices = (
 const formatAllocations = <TCurrency extends string>(
   allocations: bigint[],
   currency: TCurrency,
-  exponent: IsoPriceExponent | string,
+  exponent: IsoPriceExponent,
   format?: 'words' | 'shape',
 ): IsoPriceWords<TCurrency>[] | IsoPriceShape<TCurrency>[] => {
   const shapes: IsoPriceShape<TCurrency>[] = allocations.map((amount) => ({
@@ -282,7 +282,7 @@ const formatAllocations = <TCurrency extends string>(
     return shapes;
   }
 
-  return shapes.map((s) => asIsoPriceWords(s));
+  return shapes.map((s) => asIsoPriceWords<TCurrency>(s));
 };
 
 /**

@@ -82,7 +82,7 @@ export function calcPriceAvg<TCurrency extends string = string>(
     return resultShape;
   }
 
-  return asIsoPriceWords(resultShape);
+  return asIsoPriceWords<TCurrency>(resultShape);
 }
 
 /**
@@ -90,8 +90,8 @@ export function calcPriceAvg<TCurrency extends string = string>(
  * .why = ensures no precision loss when amounts are normalized
  */
 const findHighestPrecisionExponent = (
-  exponents: (IsoPriceExponent | string)[],
-): IsoPriceExponent | string => {
+  exponents: IsoPriceExponent[],
+): IsoPriceExponent => {
   let highestPrecision = exponents[0]!;
   let highestValue = getExponentValue(highestPrecision);
 
@@ -110,7 +110,7 @@ const findHighestPrecisionExponent = (
  * .what = extracts numeric exponent value from exponent string
  * .why = enables comparison of exponent precision
  */
-const getExponentValue = (exponent: IsoPriceExponent | string): number => {
+const getExponentValue = (exponent: IsoPriceExponent): number => {
   const match = exponent.match(/\^(-?\d+)$/);
   if (!match) return -2; // default to centi
   return parseInt(match[1]!, 10);
@@ -122,8 +122,8 @@ const getExponentValue = (exponent: IsoPriceExponent | string): number => {
  */
 const normalizeAmount = (
   amount: bigint,
-  sourceExponent: IsoPriceExponent | string,
-  targetExponent: IsoPriceExponent | string,
+  sourceExponent: IsoPriceExponent,
+  targetExponent: IsoPriceExponent,
 ): bigint => {
   const sourceValue = getExponentValue(sourceExponent);
   const targetValue = getExponentValue(targetExponent);
