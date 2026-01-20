@@ -9,7 +9,7 @@ import { asIsoPriceWords } from '../cast/asIsoPriceWords';
  * .what = extracts numeric exponent from exponent string
  * .why = enables arithmetic on exponent values
  */
-const getExponentValue = (exponent: IsoPriceExponent | string): number => {
+const getExponentValue = (exponent: IsoPriceExponent): number => {
   const match = exponent.match(/\^(-?\d+)$/);
   if (!match) return -2; // default to centi
   return parseInt(match[1]!, 10);
@@ -98,7 +98,7 @@ const applyRoundMode = (
 export const setPricePrecision = <TCurrency extends string = string>(
   input: {
     of: IsoPrice<TCurrency> | string;
-    to: IsoPriceExponent | `${IsoPriceExponent}`;
+    to: IsoPriceExponent;
   },
   options?: { round?: IsoPriceRoundMode },
 ): IsoPriceWords<TCurrency> => {

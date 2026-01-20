@@ -1,4 +1,3 @@
-import type { IsoPriceExponent } from './IsoPriceExponent';
 import type { IsoPriceHuman } from './IsoPriceHuman';
 import type { IsoPriceShape } from './IsoPriceShape';
 import type { IsoPriceWords } from './IsoPriceWords';
@@ -16,5 +15,5 @@ import type { IsoPriceWords } from './IsoPriceWords';
  */
 export type IsoPrice<TCurrency extends string = string> =
   | IsoPriceWords<TCurrency>
-  | IsoPriceShape<TCurrency, IsoPriceExponent | `${IsoPriceExponent}`>
+  | IsoPriceShape<TCurrency>
   | IsoPriceHuman;

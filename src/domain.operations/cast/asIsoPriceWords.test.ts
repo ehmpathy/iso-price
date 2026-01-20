@@ -1,3 +1,4 @@
+import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
 import { isIsoPriceWords } from '../guard/isIsoPriceWords';
 import { asIsoPriceWords } from './asIsoPriceWords';
 
@@ -32,7 +33,11 @@ describe('asIsoPriceWords', () => {
     {
       description: 'micro precision shape',
       given: {
-        input: { amount: 3n, currency: 'USD', exponent: 'micro.x10^-6' },
+        input: {
+          amount: 3n,
+          currency: 'USD',
+          exponent: IsoPriceExponent.MICRO,
+        },
       },
       expect: { output: 'USD 0.000_003' },
     },
@@ -62,6 +67,41 @@ describe('asIsoPriceWords', () => {
       description: 'words normalizes large numbers',
       given: { input: 'USD 1000000.00' },
       expect: { output: 'USD 1_000_000.00' },
+    },
+    // c.13: serialize - high-precision round-trip
+    {
+      description: 'nano precision shape to words',
+      given: {
+        input: {
+          amount: 25_000_000_000_000_000n,
+          currency: 'USD',
+          exponent: IsoPriceExponent.NANO,
+        },
+      },
+      expect: { output: 'USD 25_000_000.000_000_000' },
+    },
+    // c.15: custom currencies (crypto)
+    {
+      description: 'btc satoshi precision',
+      given: {
+        input: {
+          amount: 100_000_000n,
+          currency: 'BTC',
+          exponent: IsoPriceExponent.NANO,
+        },
+      },
+      expect: { output: 'BTC 0.100_000_000' },
+    },
+    {
+      description: 'eth wei precision',
+      given: {
+        input: {
+          amount: 1_000_000_000_000_000_000n,
+          currency: 'ETH',
+          exponent: IsoPriceExponent.PICO,
+        },
+      },
+      expect: { output: 'ETH 1_000_000.000_000_000_000' },
     },
   ];
 

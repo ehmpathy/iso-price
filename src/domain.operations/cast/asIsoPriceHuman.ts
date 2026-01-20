@@ -34,7 +34,7 @@ const CODE_TO_SYMBOL: Record<string, string> = {
  * .what = gets the decimal places for an exponent
  * .why = determines how to format the amount string
  */
-const getDecimalPlaces = (exponent: IsoPriceExponent | string): number => {
+const getDecimalPlaces = (exponent: IsoPriceExponent): number => {
   const match = exponent.match(/\^(-?\d+)$/);
   if (!match) return 2;
   return Math.abs(parseInt(match[1]!, 10));
@@ -46,7 +46,7 @@ const getDecimalPlaces = (exponent: IsoPriceExponent | string): number => {
  */
 const formatAmountHuman = (
   amount: bigint,
-  exponent: IsoPriceExponent | string = IsoPriceExponent.CENTI,
+  exponent: IsoPriceExponent = IsoPriceExponent.CENTI,
 ): string => {
   const decimalPlaces = getDecimalPlaces(exponent);
   const isNegative = amount < 0n;
@@ -106,7 +106,11 @@ const formatAmountHuman = (
 export const asIsoPriceHuman = <TCurrency extends string = string>(
   input:
     | IsoPrice<TCurrency>
-    | { amount: number | bigint; currency: TCurrency; exponent?: string }
+    | {
+        amount: number | bigint;
+        currency: TCurrency;
+        exponent?: IsoPriceExponent;
+      }
     | string,
   options?: { currency?: TCurrency },
 ): IsoPriceHuman => {

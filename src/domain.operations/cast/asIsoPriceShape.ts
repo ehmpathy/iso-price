@@ -33,10 +33,11 @@ const SYMBOL_TO_CODE: Record<string, string> = {
  * .what = parses amount string to bigint in minor units
  * .why = converts decimal string like '50.37' to bigint 5037n
  */
-const parseAmountToMinorUnits = (
-  amountStr: string,
-  exponent: IsoPriceExponent = IsoPriceExponent.CENTI,
-): { amount: bigint; exponent: IsoPriceExponent } => {
+const parseAmountToMinorUnits = (input: {
+  amountStr: string;
+  exponent: IsoPriceExponent;
+}): { amount: bigint; exponent: IsoPriceExponent } => {
+  const { amountStr, exponent } = input;
   // get the decimal places for this exponent
   const decimalPlaces = Math.abs(parseInt(exponent.split('^')[1] ?? '-2', 10));
 
@@ -92,12 +93,24 @@ const parseAmountToMinorUnits = (
  * .what = extracts currency code and amount from words format
  * .why = parses 'USD 50.37' into { currency: 'USD', amount: '50.37' }
  */
-const parseWordsFormat = (
-  value: string,
-): { currency: string; amountStr: string } => {
-  const match = value.match(/^([A-Z]{3}) (.+)$/);
-  if (!match) throw new BadRequestError('invalid words format', { value });
+const parseWordsFormat = (input: {
+  value: string;
+}): { currency: string; amountStr: string } => {
+  const match = input.value.match(/^([A-Z]{3}) (.+)$/);
+  if (!match)
+    throw new BadRequestError('invalid words format', { value: input.value });
   return { currency: match[1]!, amountStr: match[2]! };
+};
+
+/**
+ * .what = relaxed pattern for words-like format that may have commas
+ * .why = enables asIsoPrice to normalize 'USD 1,000,000.00' → 'USD 1_000_000.00'
+ *
+ * this pattern accepts commas for input convenience; isIsoPriceWords is stricter
+ */
+const isWordsLikeFormat = (value: unknown): value is string => {
+  if (typeof value !== 'string') return false;
+  return /^[A-Z]{3} -?[\d,_.]+$/.test(value);
 };
 
 /**
@@ -105,13 +118,13 @@ const parseWordsFormat = (
  * .why = parses '$50.37' or '50.37 €' into { currency: 'USD', amount: '50.37' }
  */
 const parseHumanFormat = (
-  value: string,
+  input: { value: string },
   options?: { currency?: string },
 ): { currency: string; amountStr: string } => {
   // try prefix symbols
   for (const [symbol, code] of Object.entries(SYMBOL_TO_CODE)) {
-    if (value.startsWith(symbol)) {
-      const amountStr = value.slice(symbol.length);
+    if (input.value.startsWith(symbol)) {
+      const amountStr = input.value.slice(symbol.length);
       const currency = options?.currency ?? code;
       return { currency, amountStr };
     }
@@ -119,8 +132,8 @@ const parseHumanFormat = (
 
   // try suffix symbols
   for (const [symbol, code] of Object.entries(SYMBOL_TO_CODE)) {
-    if (value.endsWith(symbol) || value.endsWith(` ${symbol}`)) {
-      const amountStr = value.replace(
+    if (input.value.endsWith(symbol) || input.value.endsWith(` ${symbol}`)) {
+      const amountStr = input.value.replace(
         new RegExp(`\\s*${symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`),
         '',
       );
@@ -129,7 +142,9 @@ const parseHumanFormat = (
     }
   }
 
-  throw new BadRequestError('unable to parse human format', { value });
+  throw new BadRequestError('unable to parse human format', {
+    value: input.value,
+  });
 };
 
 /**
@@ -151,7 +166,11 @@ const parseHumanFormat = (
 export const asIsoPriceShape = <TCurrency extends string = string>(
   input:
     | IsoPrice<TCurrency>
-    | { amount: number | bigint; currency: TCurrency; exponent?: string }
+    | {
+        amount: number | bigint;
+        currency: TCurrency;
+        exponent?: IsoPriceExponent;
+      }
     | string,
   options?: { currency?: TCurrency },
 ): IsoPriceShape<TCurrency> => {
@@ -164,42 +183,46 @@ export const asIsoPriceShape = <TCurrency extends string = string>(
   ) {
     const amount =
       typeof input.amount === 'bigint' ? input.amount : BigInt(input.amount);
+    // always include exponent for observability and recomposition
+    const exponent =
+      (input.exponent as IsoPriceExponent) ??
+      getIsoPriceExponentByCurrency(input.currency);
     return {
       amount,
       currency: input.currency as TCurrency,
-      exponent: input.exponent as IsoPriceExponent | undefined,
+      exponent,
     };
   }
 
-  // handle words format
-  if (isIsoPriceWords(input)) {
-    const { currency, amountStr } = parseWordsFormat(input);
+  // handle words format (strict) or words-like format with commas (relaxed)
+  if (isIsoPriceWords(input) || isWordsLikeFormat(input)) {
+    const { currency, amountStr } = parseWordsFormat({ value: input });
     const currencyExponent = getIsoPriceExponentByCurrency(currency);
-    const { amount, exponent } = parseAmountToMinorUnits(
+    const { amount, exponent } = parseAmountToMinorUnits({
       amountStr,
-      currencyExponent,
-    );
-    // only include exponent if it differs from currency's standard exponent
+      exponent: currencyExponent,
+    });
+    // always include exponent for observability and recomposition
     return {
       amount,
       currency: currency as TCurrency,
-      ...(exponent !== currencyExponent ? { exponent } : {}),
+      exponent,
     };
   }
 
   // handle human format
   if (isIsoPriceHuman(input)) {
-    const { currency, amountStr } = parseHumanFormat(input, options);
+    const { currency, amountStr } = parseHumanFormat({ value: input }, options);
     const currencyExponent = getIsoPriceExponentByCurrency(currency);
-    const { amount, exponent } = parseAmountToMinorUnits(
+    const { amount, exponent } = parseAmountToMinorUnits({
       amountStr,
-      currencyExponent,
-    );
-    // only include exponent if it differs from currency's standard exponent
+      exponent: currencyExponent,
+    });
+    // always include exponent for observability and recomposition
     return {
       amount,
       currency: currency as TCurrency,
-      ...(exponent !== currencyExponent ? { exponent } : {}),
+      exponent,
     };
   }
 

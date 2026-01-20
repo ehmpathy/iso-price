@@ -22,7 +22,7 @@ import { setPricePrecision } from './setPricePrecision';
 export const roundPrice = <TCurrency extends string = string>(
   input: {
     of: IsoPrice<TCurrency> | string;
-    to: IsoPriceExponent | `${IsoPriceExponent}`;
+    to: IsoPriceExponent;
   },
   options?: { round?: IsoPriceRoundMode },
 ): IsoPriceWords<TCurrency> => {

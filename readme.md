@@ -25,37 +25,230 @@ that's it. words in, words out. the precision, currency validation, and bigint a
 
 ## design
 
-**any input, safe output.**
+### **any input, safe output.**
 
 throw any format at it — `'$50.37'`, `'USD 50.37'`,  `{ amount: 5037, currency: 'USD' }`, `{ amount: 5037n, currency: 'USD' }` — and get back `IsoPriceWords`: a string that is serializable, lossless, readable, composable, and standards-conformant.
 
-when you need structured access for schema persistence or performance optimization:
-
 ```ts
-asIsoPriceShape('USD 50.37');  // => { amount: 5037n, currency: 'USD' }
+asIsoPrice('$50.37');                              // => 'USD 50.37'
+asIsoPrice('USD 50.37');                           // => 'USD 50.37'
+asIsoPrice({ amount: 5037, currency: 'USD' });     // => 'USD 50.37'
+asIsoPrice({ amount: 5037n, currency: 'USD' });    // => 'USD 50.37'
 ```
 
-when you need a ux-friendly format for display:
+when you need structured access, cast as shape:
 
 ```ts
-asIsoPriceHuman('USD 50.37');  // => '$50.37'
+asIsoPriceShape('USD 50.37');
+// => { amount: 5037n, currency: 'USD', exponent: 'centi.x10^-2' }
 ```
 
-by default, you get the best of all worlds.
+when you need a localized display, cast as human:
 
-**thin contract, deep behavior.**
+```ts
+asIsoPriceHuman('USD 50.37');
+// => '$50.37'
+```
 
-the surface is simple: prices are strictly structured strings formatted like `'USD 50.37'`. under the hood: sub-cent precision, currency exponents, lossless bigint arithmetic, automatic precision normalization.
+by default, you get the best of all worlds, as words:
 
-**explicit, not magic.**
+```ts
+'USD 50.37' === asIsoPrice('$50.37') === asIsoPriceWords('$50.37');
+// => true
+```
 
-precision is visible in the string. `'USD 50.370_000'` shows micro-dollar precision. `'USD 0.000_000_250'` shows nano-dollar precision. no hidden state, no surprises.
+### **thin contract, deep behavior.**
 
-**standards-based.**
+the surface is simple: prices are strictly structured words formatted like `'USD 50.37'`. under the hood: sub-cent precision, currency exponents, lossless bigint arithmetic, automatic precision normalization.
+
+**sub-cent precision**
+```ts
+// from inputs
+asIsoPrice('$0.000001');
+  // => 'USD 0.000_001'
+asIsoPriceShape('$0.000001');
+  // => { amount: 1n, currency: 'USD', exponent: 'micro.x10^-6' }
+asIsoPriceHuman('$0.000001');
+  // => '$0.000001'
+
+// and from arithmatic
+dividePrice({ of: '$0.25', by: 1_000_000 });
+  // => 'USD 0.000_000_250'
+asIsoPriceShape(dividePrice({ of: '$0.25', by: 1_000_000 }));
+  // => { amount: 250n, currency: 'USD', exponent: 'nano.x10^-9' }
+asIsoPriceHuman(dividePrice({ of: '$0.25', by: 1_000_000 }));
+  // => '$0.00000025'
+```
+
+**currency exponents** (iso 4217 standard)
+```ts
+// knowns the iso 4217 standard exponent for each currency
+asIsoPrice('¥1000');
+  // => 'JPY 1_000'
+asIsoPriceShape('¥1000');
+  // => { amount: 1000n, currency: 'JPY', exponent: 'whole.x10^0' }
+asIsoPriceHuman('¥1000');
+  // => '¥1,000'
+
+// expands to the standard exponent of the currency by default
+asIsoPrice('BHD 1.23');
+  // => 'BHD 1.230' (standardized to 3 decimals)
+asIsoPriceShape('BHD 1.23');
+  // => { amount: 1230n, currency: 'BHD', exponent: 'milli.x10^-3' }
+asIsoPriceHuman('BHD 1.23');
+  // => 'BHD 1.230'
+
+// to guarantee that every price looks natural in that currency
+asIsoPrice('$7');
+  // => 'USD 7.00' (standardized to 2 decimals)
+asIsoPriceShape('$7');
+  // => { amount: 700n, currency: 'USD', exponent: 'centi.x10^-2' }
+asIsoPriceHuman('$7');
+  // => '$7.00'
+
+// and yet still allow exponent override, for when you want control
+asIsoPrice('$7', { exponent: 'whole.x10^0' });
+  // => 'USD 7'
+asIsoPriceShape('$7', { exponent: 'whole.x10^0' });
+  // => { amount: 7n, currency: 'USD', exponent: 'whole.x10^0' }
+asIsoPriceHuman('$7', { exponent: 'whole.x10^0' });
+  // => '$7'
+
+// and yet still preserves the maximum precision, to whatever was supplied
+asIsoPrice('$7.12345');
+  // => 'USD 7.123_450' (preserves the micro precision from the input)
+asIsoPriceShape('$7.12345');
+  // => { amount: 7123450n, currency: 'USD', exponent: 'micro.x10^-6' }
+asIsoPriceHuman('$7.12345');
+  // => '$7.12345'
+
+// and yet still makes it easy to round, when you need to, too
+asIsoPrice('$7.12345', { exponent: 'milli.x10^-3', round: 'half-up' });
+  // => 'USD 7.123'
+asIsoPriceShape('$7.12345', { exponent: 'milli.x10^-3', round: 'half-up' });
+  // => { amount: 7123n, currency: 'USD', exponent: 'milli.x10^-3' }
+asIsoPriceHuman('$7.12345', { exponent: 'milli.x10^-3', round: 'half-up' });
+  // => '$7.123'
+```
+
+**custom currencies**
+```ts
+// custom currencies default to the 2 decimals exponent standard, common for 95%+ of currencies
+asIsoPrice('BTC 1.5');
+  // => 'BTC 1.50'
+asIsoPriceShape('BTC 1.5');
+  // => { amount: 150n, currency: 'BTC', exponent: 'centi.x10^-2' }
+asIsoPriceHuman('BTC 1.5');
+  // => 'BTC 1.50'
+```
+
+```ts
+// automatic precision merger (retains the most granular)
+sumPrices('USD 50.00', 'USD 0.000_005');
+  // => 'USD 50.000_005'
+asIsoPriceShape(sumPrices('USD 50.00', 'USD 0.000_005'));
+  // => { amount: 50_000_005n, currency: 'USD', exponent: 'micro.x10^-6' }
+asIsoPriceHuman(sumPrices('USD 50.00', 'USD 0.000_005'));
+  // => '$50.000005'
+```
+
+### **explicit, not magic.**
+
+precision is visible in the words. no hidden state, no surprises.
+
+```ts
+// precision is encoded in the output — what you see is what you have
+'USD 50.37'           // centi (cents) — 2 decimal places
+'USD 50.370_000'      // micro — 6 decimal places
+'USD 0.000_000_250'   // nano — 9 decimal places
+
+// the shape tells you exactly what's inside
+asIsoPriceShape('USD 0.000_000_250');
+// => { amount: 250n, currency: 'USD', exponent: 'nano.x10^-9' }
+```
+
+### **standards-based.**
 
 - **iso 4217** — currency codes and exponents (USD=2, JPY=0, BHD=3)
 - **si metric prefixes** — centi, milli, micro, nano, pico
 - **ecmascript numeric separators** — underscores for readability
+
+```ts
+// iso 4217: currency codes with standard exponents
+asIsoPrice('$50.37');      // => 'USD 50.37'  (code: USD, exponent: 2)
+asIsoPrice('¥1000');       // => 'JPY 1000'   (code: JPY, exponent: 0)
+asIsoPrice('BHD 1.234');   // => 'BHD 1.234'  (code: BHD, exponent: 3)
+
+// si metric prefixes: centi (10⁻²), milli (10⁻³), micro (10⁻⁶), nano (10⁻⁹), pico (10⁻¹²)
+setPricePrecision({ of: 'USD 1.00', to: 'micro.x10^-6' });
+// => 'USD 1.000_000'
+
+// ecmascript numeric separators: underscores group digits for readability
+'USD 1_000_000.00'      // one million dollars
+'USD 0.000_001'         // one micro-dollar
+'USD 1_234.567_890'     // mixed — both sides of decimal
+```
+
+### **thorough and durable.**
+
+`IsoPriceWords` is lossless, observable, and always safe to pass around in application code. serialize it, log it, store it, compare it — it just works.
+
+```ts
+// serialize
+JSON.stringify({ total: 'USD 50.37' });
+// => '{"total":"USD 50.37"}'
+
+// log
+console.log(`charged ${price} for order ${orderId}`);
+// => 'charged USD 50.37 for order 123'
+
+// compare
+'USD 50.37' === 'USD 50.37';
+// => true
+```
+
+`IsoPriceShape` eliminates numeric-float errors and integer overflow via automatic exponent scale and bigint internals. all arithmetic operations leverage this under the hood. it's hidden complexity — available when you need it, invisible by default.
+
+```ts
+// float math breaks
+0.1 + 0.2;
+// => 0.30000000000000004
+
+// iso-price just works
+sumPrices('USD 0.10', 'USD 0.20');
+// => 'USD 0.30'
+
+// bigint internals handle any scale — even pico (10⁻¹²)
+sumPrices('USD 1_000_000_000.00', 'USD 0.000_000_000_001');
+// => 'USD 1_000_000_000.000_000_000_001'
+```
+
+persistence is straightforward with both. since `IsoPriceWords` is lossless, if you don't need in-database computation, you can persist it directly — perfect for nosql and mvp sql storage. for extension-supported databases (postgres, sqlite), you can also leverage [extensions](#persistence) to make storage and manipulation of `IsoPriceShape` as natural as any other numeric type.
+
+**nosql** — just store the words
+```ts
+await dynamodb.put({ pk: orderId, total: 'USD 50.37' });
+const order = await dynamodb.get({ pk: orderId });
+sumPrices(order.total, fee);
+// => 'USD 58.37'
+```
+
+**postgres** with the iso_price extension — native operators against iso_price shapes and words
+```ts
+await sql`
+  SELECT id, total FROM orders
+  WHERE total > 'USD 10.00'
+    AND (total).currency = 'USD'
+  ORDER BY total DESC
+`;
+// => [
+//   { id: 3, total: '(5037,USD,centi.x10^2)' },
+//   { id: 1, total: '(2500,USD,centi.x10^2)' },
+// ]
+
+await sql`SELECT sum(total) FROM line_items WHERE order_id = ${orderId}`;
+// => [{ sum: '(15037,USD,centi.x10^2)' }]
+```
 
 ## install
 
@@ -102,19 +295,20 @@ precision scales automatically. no configuration needed.
 
 ### three formats
 
-| format          | example                              | use                      |
-| --------------- | ------------------------------------ | ------------------------ |
-| `IsoPriceWords` | `'USD 50.37'`                        | storage, logs, api, json |
-| `IsoPriceShape` | `{ amount: 5037n, currency: 'USD' }` | computation              |
-| `IsoPriceHuman` | `'$50.37'`                           | display                  |
+| format          | example                                                        | use                      |
+| --------------- | -------------------------------------------------------------- | ------------------------ |
+| `IsoPriceWords` | `'USD 50.37'`                                                  | storage, logs, api, json |
+| `IsoPriceShape` | `{ amount: 5037n, currency: 'USD', exponent: 'centi.x10^-2' }` | computation              |
+| `IsoPriceHuman` | `'$50.37'`                                                     | display                  |
 
 all operations accept any format. all return `IsoPriceWords` by default.
 
 ```ts
 import { asIsoPriceShape, asIsoPriceHuman } from 'iso-price';
 
-// need structured access for stripe or persistance?
-asIsoPriceShape('USD 50.37');  // => { amount: 5037n, currency: 'USD' }
+// need structured access for stripe or persistence?
+asIsoPriceShape('USD 50.37');
+// => { amount: 5037n, currency: 'USD', exponent: 'centi.x10^-2' }
 
 // need display format?
 asIsoPriceHuman('USD 50.37');  // => '$50.37'
@@ -309,7 +503,7 @@ this is intentional — it pushes you toward `IsoPriceWords` for persistence, wh
 | postgres, sqlite            | `iso_price` extension   | native arithmetic + comparison |
 | mysql, mariadb              | see persistence catalog | many considerations            |
 
-**nosql / json** — store as `IsoPriceWords` string. these databases don't support numeric price comparisons anyway, so use the portable, human-readable format:
+**nosql / json** — store as words. these databases don't support numeric price comparisons anyway, so use the portable, human-readable format:
 
 ```ts
 await dynamodb.put({ total: 'USD 50.37' });
