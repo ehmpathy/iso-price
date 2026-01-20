@@ -1,121 +1,373 @@
-# domain-glossary-price
+# iso-price
 
-![test](https://github.com/ehmpathy/domain-glossary-price/workflows/test/badge.svg)
-![publish](https://github.com/ehmpathy/domain-glossary-price/workflows/publish/badge.svg)
+![test](https://github.com/ehmpathy/iso-price/workflows/test/badge.svg)
+![publish](https://github.com/ehmpathy/iso-price/workflows/publish/badge.svg)
 
-A glossary of intuitive, universally unambiguous **Price** definitions and useful procedures.
+a pit of success for prices. iso 4217 currencies. si metric precision. ecmascript numeric separators.
 
-# purpose
+## why
 
+money math is deceptively hard:
 
-declare a ubiquitious language for
+```ts
+0.1 + 0.2 === 0.30000000000000004  // float math
+```
 
-- domain objects related to `Price`
-  - price
-  - currency
+most solutions add complexity: decimal libraries, bigint wrappers, money objects. iso-price takes the opposite approach — make the correct choice simple.
 
-- procedures related to `Price`
-  - cast price to words
-  - cast words to price
-  - sum prices
-  - etc
+```ts
+import { sumPrices } from 'iso-price';
 
-# install
+sumPrices('USD 0.10', 'USD 0.20');  // => 'USD 0.30'
+```
+
+that's it. words in, words out. the precision, currency validation, and bigint arithmetic happen automatically.
+
+## design
+
+**any input, safe output.**
+
+throw any format at it — `'$50.37'`, `'USD 50.37'`,  `{ amount: 5037, currency: 'USD' }`, `{ amount: 5037n, currency: 'USD' }` — and get back `IsoPriceWords`: a string that is serializable, lossless, readable, composable, and standards-conformant.
+
+when you need structured access for schema persistence or performance optimization:
+
+```ts
+asIsoPriceShape('USD 50.37');  // => { amount: 5037n, currency: 'USD' }
+```
+
+when you need a ux-friendly format for display:
+
+```ts
+asIsoPriceHuman('USD 50.37');  // => '$50.37'
+```
+
+by default, you get the best of all worlds.
+
+**thin contract, deep behavior.**
+
+the surface is simple: prices are strictly structured strings formatted like `'USD 50.37'`. under the hood: sub-cent precision, currency exponents, lossless bigint arithmetic, automatic precision normalization.
+
+**explicit, not magic.**
+
+precision is visible in the string. `'USD 50.370_000'` shows micro-dollar precision. `'USD 0.000_000_250'` shows nano-dollar precision. no hidden state, no surprises.
+
+**standards-based.**
+
+- **iso 4217** — currency codes and exponents (USD=2, JPY=0, BHD=3)
+- **si metric prefixes** — centi, milli, micro, nano, pico
+- **ecmascript numeric separators** — underscores for readability
+
+## install
 
 ```sh
-npm install domain-glossary-price
+npm install iso-price
 ```
 
-# use
+## usage
 
-### `Price` = declare a price
-
-per the standard laid out by Stripe, price.amounts are declared in the smallest unit of the currency
-
-for example, for USD, in cents
+### the basics
 
 ```ts
-import { Price, Currency } from 'domain-glossary-price';
+import { asIsoPrice, sumPrices, multiplyPrice } from 'iso-price';
 
-const price = new Price({ amount: 50_00, currency: 'USD' })
-const price = new Price({ amount: 37_00, currency: Currency.USD })
+// parse any format
+const price = asIsoPrice('$50.37');           // => 'USD 50.37'
+const price = asIsoPrice('EUR 100.00');       // => 'EUR 100.00'
+
+// arithmetic just works, regardless of input format
+sumPrices('$10', 'USD 20.00');                // => 'USD 30.00'
+multiplyPrice({ of: '$100', by: 1.08 });      // => 'USD 108.00'
 ```
 
+### sub-cent precision
 
-## words
-
-### `ofPriceWord` = cast from words to dobjs
-
-its often convenient to declare prices in human words rather than dobjs
-
-you can do so easily with `ofPriceWord`
+llm token costs, serverless invocations, crypto — sometimes you need more than cents:
 
 ```ts
-const price: Price = ofPriceWord('$50.37')
+import { dividePrice, sumPrices } from 'iso-price';
 
-expect(price).toEqual(new Price({ amount: 50_37, currency: 'USD' }))
+// $0.25 per million tokens
+const perToken = dividePrice({ of: '$0.25', by: 1_000_000 });
+// => 'USD 0.000_000_250'
+
+// track micro-costs, sum to invoice
+const costs = ['USD 0.011_845_500', 'USD 47.370_001_970'];
+sumPrices(costs);  // => 'USD 47.381_847_470'
+
+// cross-precision arithmetic auto-resolves to most granular
+sumPrices('USD 50.00', 'USD 0.000_005');  // => 'USD 50.000_005'
 ```
 
+precision scales automatically. no configuration needed.
 
-### `asPriceWord` = cast from dobjs to words
+### three formats
 
-a common usecase is to show a price from the database in human words
+| format          | example                              | use                      |
+| --------------- | ------------------------------------ | ------------------------ |
+| `IsoPriceWords` | `'USD 50.37'`                        | storage, logs, api, json |
+| `IsoPriceShape` | `{ amount: 5037n, currency: 'USD' }` | computation              |
+| `IsoPriceHuman` | `'$50.37'`                           | display                  |
 
-you can do so easily with `asPriceWord`
+all operations accept any format. all return `IsoPriceWords` by default.
 
 ```ts
-const price: string = asPriceWord(new Price({ 50_37, currency: 'USD' }))
+import { asIsoPriceShape, asIsoPriceHuman } from 'iso-price';
 
-expect(price).toEqual('$50.37')
+// need structured access for stripe or persistance?
+asIsoPriceShape('USD 50.37');  // => { amount: 5037n, currency: 'USD' }
+
+// need display format?
+asIsoPriceHuman('USD 50.37');  // => '$50.37'
 ```
 
+### allocation without loss
 
-you can use the `options` input to further customize. for example, drop the cents
+money splits create remainders. iso-price handles them:
 
 ```ts
-const price: string = asPriceWord(new Price({ 50_37, currency: 'USD' }), { cents: false })
+import { allocatePrice } from 'iso-price';
 
-expect(price).toEqual('$50')
+allocatePrice({ of: 'USD 10.00', into: { parts: 3 }, remainder: 'first' });
+// => ['USD 3.34', 'USD 3.33', 'USD 3.33']
+// sum: exactly $10.00
 ```
 
-## calcs
+## api
 
-### `calcPriceSummation` = `sumPrices` = summate prices
+### cast
 
-add prices together
+- `asIsoPrice(input)` — normalize to words
+- `asIsoPriceWords(input)` — convert to words
+- `asIsoPriceShape(input)` — convert to shape
+- `asIsoPriceHuman(input)` — convert to display
+
+### arithmetic
+
+- `sumPrices(...prices)` / `priceSum` / `addPrices` / `priceAdd`
+- `subPrices(a, b)` / `priceSub`
+- `multiplyPrice({ of, by })` / `priceMultiply`
+- `dividePrice({ of, by })` / `priceDivide`
+- `allocatePrice({ of, into, remainder })` / `priceAllocate`
+
+### precision
+
+- `setPricePrecision({ of, to }, options?)`
+- `roundPrice({ of }, options?)`
+- `getIsoPriceExponentByCurrency(currency)`
+
+### statistics
+
+- `calcPriceAvg(prices)`
+- `calcPriceStdev(prices)`
+
+### guards
+
+- `isIsoPrice(input)` / `.assure(input)`
+- `isIsoPriceWords(input)` / `.assure(input)`
+- `isIsoPriceShape(input)` / `.assure(input)`
+- `isIsoPriceHuman(input)` / `.assure(input)`
+
+### types
+
+- `IsoPrice<TCurrency>` — union of all formats
+- `IsoPriceWords<TCurrency>` — branded string
+- `IsoPriceShape<TCurrency>` — bigint object
+- `IsoPriceHuman` — display string
+- `IsoPriceExponent` — precision enum
+- `IsoPriceRoundMode` — round mode enum
+- `IsoCurrency` — top 25 currencies enum
+
+## currency exponents
+
+iso 4217 defines the standard precision (exponent) for each currency. iso-price applies these automatically:
 
 ```ts
-const priceSum = sumPrices([priceA, priceB, priceC])
+asIsoPrice('$50.37');      // => 'USD 50.37'  (2 decimals — cents)
+asIsoPrice('¥1000');       // => 'JPY 1000'   (0 decimals — no minor unit)
+asIsoPrice('BHD 1.234');   // => 'BHD 1.234'  (3 decimals — fils)
 ```
 
-### `calcPriceSubtraction` = `subPrices` = subtract prices
+| currency      | exponent | minor unit | example       |
+| ------------- | -------- | ---------- | ------------- |
+| USD, EUR, GBP | 2        | cents      | `'USD 50.37'` |
+| JPY, KRW, VND | 0        | none       | `'JPY 1000'`  |
+| BHD, KWD, OMR | 3        | fils/baisa | `'BHD 1.234'` |
 
-subtract one price from another
+when you need more precision than the standard (llm tokens, serverless), iso-price extends with si metric prefixes:
+
+## exponents
+
+si metric prefixes for explicit precision:
+
+| exponent       | factor | iso 4217   | examples   |
+| -------------- | ------ | ---------- | ---------- |
+| `whole.x10^0`  | 10⁰    | 0 decimals | jpy, krw   |
+| `centi.x10^-2` | 10⁻²   | 2 decimals | usd, eur   |
+| `milli.x10^-3` | 10⁻³   | 3 decimals | bhd, kwd   |
+| `micro.x10^-6` | 10⁻⁶   | —          | llm tokens |
+| `nano.x10^-9`  | 10⁻⁹   | —          | serverless |
+| `pico.x10^-12` | 10⁻¹²  | —          | extreme    |
+
+## real-world examples
+
+### e-commerce invoice
+
+standard cents precision — the common case:
 
 ```ts
-const priceDiff = subPrices([priceA, priceB])
+const lineItems = ['USD 29.99', 'USD 14.50', 'USD 5.99'];
+const subtotal = sumPrices(lineItems);                    // => 'USD 50.48'
+const withTax = multiplyPrice({ of: subtotal, by: 1.08 }); // => 'USD 54.52'
 ```
 
-### `calcPriceMultiplication` = `multiplyPrice` = multiply a price
+### llm api cost aggregation
 
-multiply a price by a scalar
+nano-dollar precision for per-token costs:
 
 ```ts
-const price5xed = multiplyPrice(price, 5)
+// claude haiku: $0.25 per million input tokens
+const costPerToken = dividePrice({ of: 'USD 0.25', by: 1_000_000 });
+// => 'USD 0.000_000_250'
+
+// accumulate usage across requests
+const costsAccumulated = [
+  'USD 0.000_047_250',   // 189 tokens
+  'USD 0.000_125_000',   // 500 tokens
+  'USD 0.002_847_500',   // 11,390 tokens
+];
+
+// sum micro-costs into invoiceable amount
+const costTotal = sumPrices(costsAccumulated);  // => 'USD 0.003_019_750'
+
+// combine with standard e-commerce charges
+const platformFee = 'USD 9.99';
+const invoice = sumPrices(platformFee, costTotal);
+// => 'USD 9.993_019_750'
 ```
 
-### `calcPriceDivision` = `dividePrice` = divide a price
+### bill allocation
 
-divide a price by a scalar
+allocate without remainder loss:
 
 ```ts
-const priceHalfed = dividePrice(price, 2)
+// split a $100 dinner bill 3 ways
+allocatePrice({ of: 'USD 100.00', into: { parts: 3 }, remainder: 'first' });
+// => ['USD 33.34', 'USD 33.33', 'USD 33.33']
+// sum: exactly $100.00
+
+// split by ratio (60/40)
+allocatePrice({ of: 'USD 100.00', into: { ratios: [6, 4] }, remainder: 'first' });
+// => ['USD 60.00', 'USD 40.00']
 ```
 
-### `calcPriceStdev` = calc standard deviation of prices
+## currency symbols
 
-calculate the standard deviation of a list of prices
+currency symbols are lossy — `$` could be USD, CAD, AUD, or 20+ other currencies. iso-price defaults to the most common:
+
+| symbol | default | also used by                      |
+| ------ | ------- | --------------------------------- |
+| `$`    | USD     | CAD, AUD, NZD, MXN, SGD, HKD, ... |
+| `€`    | EUR     | (unique)                          |
+| `£`    | GBP     | EGP, LBP, SYP, ...                |
+| `¥`    | JPY     | CNY                               |
+
+override when needed:
 
 ```ts
-const priceStdev = calcPriceStdev([priceA, priceB, priceC])
+asIsoPrice('$50.37');                        // => 'USD 50.37'
+asIsoPrice('$50.37', { currency: 'CAD' });   // => 'CAD 50.37'
+asIsoPrice('$50.37', { currency: 'AUD' });   // => 'AUD 50.37'
 ```
+
+for unambiguous storage and transmission, always use `IsoPriceWords` format (`'USD 50.37'`). use `IsoPriceHuman` (`'$50.37'`) only for display.
+
+## serialization
+
+`IsoPriceWords` is a string — it serializes trivially:
+
+```ts
+const price = sumPrices('USD 10.00', 'USD 20.00');  // => 'USD 30.00'
+
+JSON.stringify({ total: price });
+// => '{"total":"USD 30.00"}'
+```
+
+`IsoPriceShape` uses bigint, which cannot be serialized directly:
+
+```ts
+JSON.stringify({ amount: 5037n });
+// => TypeError: Do not know how to serialize a BigInt
+```
+
+this is intentional — it pushes you toward `IsoPriceWords` for persistence, which is portable, human-readable, and lossless.
+
+## persistence
+
+| database                    | recommendation          | storage                        |
+| --------------------------- | ----------------------- | ------------------------------ |
+| dynamodb, mongodb, s3, json | `IsoPriceWords`         | `"USD 50.37"`                  |
+| postgres, sqlite            | `iso_price` extension   | native arithmetic + comparison |
+| mysql, mariadb              | see persistence catalog | many considerations            |
+
+**nosql / json** — store as `IsoPriceWords` string. these databases don't support numeric price comparisons anyway, so use the portable, human-readable format:
+
+```ts
+await dynamodb.put({ total: 'USD 50.37' });
+const price = asIsoPrice(item.total);  // => 'USD 50.37'
+```
+
+**postgres / sqlite** — use the `iso_price` extension for native operators:
+
+```sql
+SELECT * FROM items WHERE price > 'USD 10.00' ORDER BY price;
+SELECT sum(price) FROM line_items;  -- auto-normalizes exponents
+```
+
+**other sql** (mysql, mariadb, etc) — these databases don't support extensions, so price comparisons across currencies and precisions require careful consideration. see the [persistence catalog](./.agent/repo=.this/role=dbadmin/briefs/per001.persistence._.[catalog].md) for patterns.
+
+## round modes
+
+when precision decreases, a round mode is required:
+
+```ts
+import { setPricePrecision, roundPrice } from 'iso-price';
+
+// default: half-up (standard round behavior)
+setPricePrecision({ of: 'USD 5.555', to: 'centi.x10^-2' });
+// => 'USD 5.56'
+
+// explicit round modes
+setPricePrecision({ of: 'USD 5.555', to: 'centi.x10^-2' }, { round: 'floor' });
+// => 'USD 5.55'
+
+setPricePrecision({ of: 'USD 5.555', to: 'centi.x10^-2' }, { round: 'ceil' });
+// => 'USD 5.56'
+
+// round to currency's standard precision
+roundPrice({ of: 'USD 5.555_555' });  // => 'USD 5.56'
+```
+
+| mode        | behavior                              | 5.555 → cents |
+| ----------- | ------------------------------------- | ------------- |
+| `half-up`   | round half toward +∞ (default)        | 5.56          |
+| `half-down` | round half toward 0                   | 5.55          |
+| `half-even` | round half to nearest even (banker's) | 5.56          |
+| `floor`     | toward −∞                             | 5.55          |
+| `ceil`      | toward +∞                             | 5.56          |
+| `trunc`     | toward 0                              | 5.55          |
+
+## supported currencies
+
+`IsoCurrency` includes the top 25 currencies by forex volume plus the 3-decimal currencies:
+
+```ts
+enum IsoCurrency {
+  // top by volume
+  USD, EUR, JPY, GBP, CNY, AUD, CAD, CHF, HKD, NZD,
+  SEK, KRW, SGD, NOK, MXN, INR, ZAR, BRL, DKK, PLN, THB,
+  // 3-decimal (fils/baisa)
+  BHD, KWD, OMR, TND,
+}
+```
+
+custom currencies (BTC, ETH, or any 3-letter code) are supported — they default to 2-decimal precision unless explicitly specified.

@@ -1,15 +1,21 @@
 {
-  "name": "domain-glossary-price",
+  "name": "iso-price",
   "author": "ehmpathy",
-  "description": "A glossary of intuitive, universally unambiguous price definitions and useful procedures.",
+  "description": "type-safe price representation with sub-cent precision, iso 4217 currency support, and lossless arithmetic",
   "version": "1.0.3",
-  "repository": "ehmpathy/domain-glossary-price",
-  "homepage": "https://github.com/ehmpathy/domain-glossary-price",
+  "repository": "ehmpathy/iso-price",
+  "homepage": "https://github.com/ehmpathy/iso-price",
   "keywords": [
     "price",
-    "currency"
+    "currency",
+    "money",
+    "iso-4217",
+    "bigint",
+    "precision",
+    "arithmetic",
+    "typescript"
   ],
-  "bugs": "https://github.com/ehmpathy/domain-glossary-price/issues",
+  "bugs": "https://github.com/ehmpathy/iso-price/issues",
   "license": "MIT",
   "main": "dist/index.js",
   "engines": {
@@ -54,9 +60,8 @@
     "prepare": "if [ -e .git ] && [ -z $CI ]; then npm run prepare:husky && npm run prepare:rhachet; fi"
   },
   "dependencies": {
-    "helpful-errors": "1.5.3",
-    "joi": "17.13.3",
-    "type-fns": "1.21.0"
+    "domain-glossaries": "1.0.0",
+    "helpful-errors": "1.5.3"
   },
   "peerDependencies": {
     "domain-objects": ">=0.24.2"
