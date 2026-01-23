@@ -191,7 +191,7 @@ setPricePrecision({ of: 'USD 1.00', to: 'micro.x10^-6' });
 
 ### **thorough and durable.**
 
-`IsoPriceWords` is lossless, observable, and always safe to pass around in application code. serialize it, log it, store it, compare it — it just works.
+`IsoPriceWords` is lossless, observable, and always safe to pass around in application code. serialize it, log it, store it — it just works.
 
 ```ts
 // serialize
@@ -202,9 +202,8 @@ JSON.stringify({ total: 'USD 50.37' });
 console.log(`charged ${price} for order ${orderId}`);
 // => 'charged USD 50.37 for order 123'
 
-// compare
-'USD 50.37' === 'USD 50.37';
-// => true
+// store
+await db.save({ orderId, total: 'USD 50.37' });
 ```
 
 `IsoPriceShape` eliminates numeric-float errors and integer overflow via automatic exponent scale and bigint internals. all arithmetic operations leverage this under the hood. it's hidden complexity — available when you need it, invisible by default.
@@ -272,6 +271,42 @@ sumPrices('$10', 'USD 20.00');                // => 'USD 30.00'
 multiplyPrice({ of: '$100', by: 1.08 });      // => 'USD 108.00'
 ```
 
+### comparison and sort
+
+as you may expect, prices need numeric comparison.
+
+just like versions (e.g., `v3.10.0` vs `v3.9.0`) and ip addresses (e.g., `192.168.1.10` vs `192.168.1.9`), regular string comparison wont do what you want on this numericaly comparable value.
+
+strings compare lexicographically and literally,
+- `'USD 100' < 'USD 9'` -> probably not what you want
+- `'USD 100' != 'USD 100.00'` -> probably not what you want
+
+iso-price provides standard comparison operators to make numeric comparisons of prices simple
+- these operators consider currencies, to failfast if you request an incompatible comparison
+- these operators consider precisions, to scale to the most precise exponent before equality checks
+- and leverage the IsoPriceShape under the hood to do the comparisons safely
+
+tip: use a linter to forbid any string comparisons on prices, given its almost never what you want
+
+```ts
+'USD 50.37' === 'USD 50.37';
+// => true
+
+// compare numerically
+isIsoPrice.greater('USD 100.00', 'USD 9.00');
+// => true
+isIsoPrice.lesser('USD 9.00', 'USD 100.00');
+// => true
+isIsoPrice.equal('USD 0.25', 'USD 0.250_000');
+// => true (handles precision)
+
+// sort numerically
+asIsoPrice.sorted(['USD 100.00', 'USD 9.00', 'USD 50.00']);
+// => ['USD 9.00', 'USD 50.00', 'USD 100.00']
+asIsoPrice.sorted.desc(['USD 100.00', 'USD 9.00', 'USD 50.00']);
+// => ['USD 100.00', 'USD 50.00', 'USD 9.00']
+```
+
 ### sub-cent precision
 
 llm token costs, serverless invocations, crypto — sometimes you need more than cents:
@@ -331,6 +366,9 @@ allocatePrice({ of: 'USD 10.00', into: { parts: 3 }, remainder: 'first' });
 ### cast
 
 - `asIsoPrice(input)` — normalize to words
+- `asIsoPrice.sorted(prices, options?)` — sort numerically
+- `asIsoPrice.sorted.asc(prices)` — sort asc (alias)
+- `asIsoPrice.sorted.desc(prices)` — sort desc
 - `asIsoPriceWords(input)` — convert to words
 - `asIsoPriceShape(input)` — convert to shape
 - `asIsoPriceHuman(input)` — convert to display
@@ -357,6 +395,9 @@ allocatePrice({ of: 'USD 10.00', into: { parts: 3 }, remainder: 'first' });
 ### guards
 
 - `isIsoPrice(input)` / `.assure(input)`
+- `isIsoPrice.greater(a, b)` — numeric comparison
+- `isIsoPrice.lesser(a, b)` — numeric comparison
+- `isIsoPrice.equal(a, b)` — numeric equality (handles precision)
 - `isIsoPriceWords(input)` / `.assure(input)`
 - `isIsoPriceShape(input)` / `.assure(input)`
 - `isIsoPriceHuman(input)` / `.assure(input)`

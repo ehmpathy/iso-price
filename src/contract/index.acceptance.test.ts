@@ -1,9 +1,11 @@
 import { given, then, when } from 'test-fns';
 
 import {
+  asIsoPrice,
   asIsoPriceShape,
   dividePrice,
   IsoPriceExponent,
+  isIsoPrice,
   multiplyPrice,
   roundPrice,
   sumPrices,
@@ -79,6 +81,68 @@ describe('iso-price acceptance', () => {
         // stripe expects amount in cents as integer
         expect(Number(invoiceTotal.amount)).toEqual(4786);
         expect(invoiceTotal.currency.toLowerCase()).toEqual('usd');
+      });
+    });
+  });
+
+  given('[case2] price comparison and sort', () => {
+    when('[t0] javascript string comparison footgun', () => {
+      then('string comparison fails for numeric order', () => {
+        // the footgun: lexicographic string comparison
+        expect('USD 100.00' > 'USD 9.00').toBe(false); // '1' < '9' in ascii
+        expect('USD 100.00' < 'USD 9.00').toBe(true); // incorrect!
+      });
+
+      then('isIsoPrice.greater gives correct numeric comparison', () => {
+        expect(isIsoPrice.greater('USD 100.00', 'USD 9.00')).toBe(true);
+      });
+
+      then('isIsoPrice.lesser gives correct numeric comparison', () => {
+        expect(isIsoPrice.lesser('USD 9.00', 'USD 100.00')).toBe(true);
+      });
+    });
+
+    when('[t1] precision normalization', () => {
+      then('isIsoPrice.equal handles different precision', () => {
+        // same value, different precision
+        expect(isIsoPrice.equal('USD 0.25', 'USD 0.250_000')).toBe(true);
+      });
+
+      then('isIsoPrice.greater handles mixed precision', () => {
+        expect(isIsoPrice.greater('USD 0.250_001', 'USD 0.25')).toBe(true);
+      });
+    });
+
+    when('[t2] sort prices numerically', () => {
+      then('asIsoPrice.sorted gives correct numeric order', () => {
+        const prices = ['USD 100.00', 'USD 9.00', 'USD 50.00'];
+        const sorted = asIsoPrice.sorted(prices);
+        expect(sorted).toEqual(['USD 9.00', 'USD 50.00', 'USD 100.00']);
+      });
+
+      then('asIsoPrice.sorted.desc gives desc order', () => {
+        const prices = ['USD 100.00', 'USD 9.00', 'USD 50.00'];
+        const sorted = asIsoPrice.sorted.desc(prices);
+        expect(sorted).toEqual(['USD 100.00', 'USD 50.00', 'USD 9.00']);
+      });
+    });
+
+    when('[t3] invoice line item sort for display', () => {
+      then('sort line items by price for invoice preview', () => {
+        // llm costs at different precision levels
+        const lineItems = [
+          'USD 47.370_001_970', // output tokens
+          'USD 0.011_845_500', // input tokens
+          'USD 0.000_250_000', // per-token rate sample
+        ];
+
+        // sort asc for invoice display
+        const sorted = asIsoPrice.sorted(lineItems);
+        expect(sorted).toEqual([
+          'USD 0.000_250_000',
+          'USD 0.011_845_500',
+          'USD 47.370_001_970',
+        ]);
       });
     });
   });

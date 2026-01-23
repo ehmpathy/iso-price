@@ -4,6 +4,7 @@ import type { IsoPrice } from '../../domain.objects/IsoPrice';
 import type { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
 import type { IsoPriceWords } from '../../domain.objects/IsoPriceWords';
 import { isIsoPriceHuman } from '../guard/isIsoPriceHuman';
+import { asIsoPriceSorted } from './asIsoPriceSorted';
 import { asIsoPriceWords } from './asIsoPriceWords';
 
 /**
@@ -133,3 +134,9 @@ export const asIsoPrice = <TCurrency extends string = string>(
 
   return asIsoPriceWords(input as IsoPrice<TCurrency>, options);
 };
+
+/**
+ * .what = sorts an array of prices by numeric value
+ * .why = provides correct numeric sort instead of lexicographic string sort
+ */
+asIsoPrice.sorted = asIsoPriceSorted;

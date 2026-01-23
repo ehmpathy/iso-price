@@ -131,4 +131,29 @@ describe('asIsoPrice', () => {
       expect(isIsoPriceWords(result)).toBe(true);
     });
   });
+
+  describe('.sorted', () => {
+    test('is callable', () => {
+      const result = asIsoPrice.sorted(['USD 100.00', 'USD 9.00', 'USD 50.00']);
+      expect(result).toEqual(['USD 9.00', 'USD 50.00', 'USD 100.00']);
+    });
+
+    test('.asc is callable', () => {
+      const result = asIsoPrice.sorted.asc([
+        'USD 100.00',
+        'USD 9.00',
+        'USD 50.00',
+      ]);
+      expect(result).toEqual(['USD 9.00', 'USD 50.00', 'USD 100.00']);
+    });
+
+    test('.desc is callable', () => {
+      const result = asIsoPrice.sorted.desc([
+        'USD 100.00',
+        'USD 9.00',
+        'USD 50.00',
+      ]);
+      expect(result).toEqual(['USD 100.00', 'USD 50.00', 'USD 9.00']);
+    });
+  });
 });
