@@ -153,4 +153,28 @@ describe('isIsoPrice', () => {
       });
     });
   });
+
+  describe('.greater', () => {
+    test('is callable and delegates to isIsoPriceGreater', () => {
+      expect(isIsoPrice.greater('USD 100.00', 'USD 9.00')).toBe(true);
+      expect(isIsoPrice.greater('USD 9.00', 'USD 100.00')).toBe(false);
+      expect(isIsoPrice.greater('USD 100.00', 'USD 100.00')).toBe(false);
+    });
+  });
+
+  describe('.lesser', () => {
+    test('is callable and delegates to isIsoPriceLesser', () => {
+      expect(isIsoPrice.lesser('USD 9.00', 'USD 100.00')).toBe(true);
+      expect(isIsoPrice.lesser('USD 100.00', 'USD 9.00')).toBe(false);
+      expect(isIsoPrice.lesser('USD 100.00', 'USD 100.00')).toBe(false);
+    });
+  });
+
+  describe('.equal', () => {
+    test('is callable and delegates to isIsoPriceEqual', () => {
+      expect(isIsoPrice.equal('USD 100.00', 'USD 100.00')).toBe(true);
+      expect(isIsoPrice.equal('USD 0.25', 'USD 0.250_000')).toBe(true);
+      expect(isIsoPrice.equal('USD 100.00', 'USD 9.00')).toBe(false);
+    });
+  });
 });

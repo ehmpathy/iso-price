@@ -1,7 +1,10 @@
 import { BadRequestError } from 'helpful-errors';
 
 import type { IsoPrice } from '../../domain.objects/IsoPrice';
+import { isIsoPriceEqual } from './isIsoPriceEqual';
+import { isIsoPriceGreater } from './isIsoPriceGreater';
 import { isIsoPriceHuman } from './isIsoPriceHuman';
+import { isIsoPriceLesser } from './isIsoPriceLesser';
 import { isIsoPriceShape } from './isIsoPriceShape';
 import { isIsoPriceWords } from './isIsoPriceWords';
 
@@ -28,3 +31,21 @@ isIsoPrice.assure = (value: unknown): asserts value is IsoPrice => {
   if (!isIsoPrice(value))
     throw new BadRequestError('value is not a valid IsoPrice', { value });
 };
+
+/**
+ * .what = checks if first price is numerically greater than second
+ * .why = enables safe price comparison without string comparison footgun
+ */
+isIsoPrice.greater = isIsoPriceGreater;
+
+/**
+ * .what = checks if first price is numerically lesser than second
+ * .why = enables safe price comparison without string comparison footgun
+ */
+isIsoPrice.lesser = isIsoPriceLesser;
+
+/**
+ * .what = checks if two prices are numerically equal
+ * .why = enables safe price comparison without string comparison footgun
+ */
+isIsoPrice.equal = isIsoPriceEqual;
