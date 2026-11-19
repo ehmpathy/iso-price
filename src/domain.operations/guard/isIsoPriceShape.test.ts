@@ -1,7 +1,8 @@
 import { BadRequestError } from 'helpful-errors';
 import { getError } from 'test-fns';
 
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+
 import { isIsoPriceShape } from './isIsoPriceShape';
 
 describe('isIsoPriceShape', () => {

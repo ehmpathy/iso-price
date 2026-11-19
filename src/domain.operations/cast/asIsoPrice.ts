@@ -1,9 +1,10 @@
 import { BadRequestError } from 'helpful-errors';
 
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
-import type { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
-import type { IsoPriceWords } from '../../domain.objects/IsoPriceWords';
-import { isIsoPriceHuman } from '../guard/isIsoPriceHuman';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+import type { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+import type { IsoPriceWords } from '@src/domain.objects/IsoPriceWords';
+import { isIsoPriceHuman } from '@src/domain.operations/guard/isIsoPriceHuman';
+
 import { asIsoPriceSorted } from './asIsoPriceSorted';
 import { asIsoPriceWords } from './asIsoPriceWords';
 

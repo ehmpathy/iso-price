@@ -1,7 +1,8 @@
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
-import type { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
-import type { IsoPriceRoundMode } from '../../domain.objects/IsoPriceRoundMode';
-import type { IsoPriceWords } from '../../domain.objects/IsoPriceWords';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+import type { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+import type { IsoPriceRoundMode } from '@src/domain.objects/IsoPriceRoundMode';
+import type { IsoPriceWords } from '@src/domain.objects/IsoPriceWords';
+
 import { setPricePrecision } from './setPricePrecision';
 
 /**

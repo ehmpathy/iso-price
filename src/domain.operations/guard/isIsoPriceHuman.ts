@@ -1,6 +1,6 @@
 import { BadRequestError } from 'helpful-errors';
 
-import type { IsoPriceHuman } from '../../domain.objects/IsoPriceHuman';
+import type { IsoPriceHuman } from '@src/domain.objects/IsoPriceHuman';
 
 /**
  * .what = common currency symbols for human-readable price formats

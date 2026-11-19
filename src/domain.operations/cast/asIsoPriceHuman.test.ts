@@ -1,4 +1,5 @@
-import { isIsoPriceHuman } from '../guard/isIsoPriceHuman';
+import { isIsoPriceHuman } from '@src/domain.operations/guard/isIsoPriceHuman';
+
 import { asIsoPriceHuman } from './asIsoPriceHuman';
 
 describe('asIsoPriceHuman', () => {

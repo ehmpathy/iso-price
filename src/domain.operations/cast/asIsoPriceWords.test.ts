@@ -1,5 +1,6 @@
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
-import { isIsoPriceWords } from '../guard/isIsoPriceWords';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+import { isIsoPriceWords } from '@src/domain.operations/guard/isIsoPriceWords';
+
 import { asIsoPriceWords } from './asIsoPriceWords';
 
 describe('asIsoPriceWords', () => {

@@ -1,7 +1,8 @@
 import { BadRequestError, getError } from 'helpful-errors';
 
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
-import { IsoPriceRoundMode } from '../../domain.objects/IsoPriceRoundMode';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+import { IsoPriceRoundMode } from '@src/domain.objects/IsoPriceRoundMode';
+
 import { dividePrice } from './dividePrice';
 
 describe('dividePrice', () => {
