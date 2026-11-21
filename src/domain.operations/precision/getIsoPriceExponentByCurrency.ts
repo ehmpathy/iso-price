@@ -1,4 +1,4 @@
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
 
 /**
  * .what = currency codes that use whole units (no decimals)

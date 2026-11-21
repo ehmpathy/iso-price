@@ -1,6 +1,6 @@
 import { BadRequestError } from 'helpful-errors';
 
-import type { IsoPriceShape } from '../../domain.objects/IsoPriceShape';
+import type { IsoPriceShape } from '@src/domain.objects/IsoPriceShape';
 
 /**
  * .what = type guard for IsoPriceShape format

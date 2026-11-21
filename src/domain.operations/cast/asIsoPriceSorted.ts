@@ -1,8 +1,9 @@
 import { BadRequestError } from 'helpful-errors';
 
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
-import type { IsoPriceWords } from '../../domain.objects/IsoPriceWords';
-import { subPrices } from '../arithmetic/subPrices';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+import type { IsoPriceWords } from '@src/domain.objects/IsoPriceWords';
+import { subPrices } from '@src/domain.operations/arithmetic/subPrices';
+
 import { asIsoPriceWords } from './asIsoPriceWords';
 
 /**

@@ -3,8 +3,9 @@ name: .publish-npm
 on:
   workflow_call:
 
+# .why = least privilege: only the publish job grants id-token, at job scope
 permissions:
-  id-token: write # required for oidc
+  contents: read
 
 jobs:
   install:
@@ -12,19 +13,22 @@ jobs:
 
   publish:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write # required for oidc
     needs: [install]
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: set node-version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           registry-url: "https://registry.npmjs.org/" # required to publish
           node-version-file: ".nvmrc"
 
       - name: node-modules cache get
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         id: cache
         with:
           path: ./node_modules
@@ -48,8 +52,8 @@ jobs:
           NPM_VERSION=$(npm --version)
           MIN_VERSION="11.5.1"
           if [ "$(printf '%s\n' "$MIN_VERSION" "$NPM_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]; then
-            echo "npm $NPM_VERSION < $MIN_VERSION, will upgrade npm now to support oidc..."
-            npm install -g npm@latest
+            echo "npm $NPM_VERSION < $MIN_VERSION, will upgrade npm to the latest 11.x for oidc..."
+            npm install -g npm@11
           else
             echo "npm $NPM_VERSION >= $MIN_VERSION, ready to use!"
           fi

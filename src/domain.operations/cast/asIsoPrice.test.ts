@@ -1,7 +1,8 @@
 import { BadRequestError } from 'helpful-errors';
 import { getError } from 'test-fns';
 
-import { isIsoPriceWords } from '../guard/isIsoPriceWords';
+import { isIsoPriceWords } from '@src/domain.operations/guard/isIsoPriceWords';
+
 import { asIsoPrice } from './asIsoPrice';
 
 describe('asIsoPrice', () => {

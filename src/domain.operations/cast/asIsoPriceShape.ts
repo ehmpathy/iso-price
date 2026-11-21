@@ -1,11 +1,11 @@
 import { BadRequestError } from 'helpful-errors';
 
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
-import type { IsoPriceShape } from '../../domain.objects/IsoPriceShape';
-import { isIsoPriceHuman } from '../guard/isIsoPriceHuman';
-import { isIsoPriceWords } from '../guard/isIsoPriceWords';
-import { getIsoPriceExponentByCurrency } from '../precision/getIsoPriceExponentByCurrency';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+import type { IsoPriceShape } from '@src/domain.objects/IsoPriceShape';
+import { isIsoPriceHuman } from '@src/domain.operations/guard/isIsoPriceHuman';
+import { isIsoPriceWords } from '@src/domain.operations/guard/isIsoPriceWords';
+import { getIsoPriceExponentByCurrency } from '@src/domain.operations/precision/getIsoPriceExponentByCurrency';
 
 /**
  * .what = currency symbol to code mappings

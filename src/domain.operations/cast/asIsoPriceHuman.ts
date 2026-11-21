@@ -1,7 +1,8 @@
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
-import type { IsoPriceHuman } from '../../domain.objects/IsoPriceHuman';
-import { getIsoPriceExponentByCurrency } from '../precision/getIsoPriceExponentByCurrency';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+import type { IsoPriceHuman } from '@src/domain.objects/IsoPriceHuman';
+import { getIsoPriceExponentByCurrency } from '@src/domain.operations/precision/getIsoPriceExponentByCurrency';
+
 import { asIsoPriceShape } from './asIsoPriceShape';
 
 /**

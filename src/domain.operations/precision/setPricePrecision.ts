@@ -1,9 +1,9 @@
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
-import { IsoPriceRoundMode } from '../../domain.objects/IsoPriceRoundMode';
-import type { IsoPriceWords } from '../../domain.objects/IsoPriceWords';
-import { asIsoPriceShape } from '../cast/asIsoPriceShape';
-import { asIsoPriceWords } from '../cast/asIsoPriceWords';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+import { IsoPriceRoundMode } from '@src/domain.objects/IsoPriceRoundMode';
+import type { IsoPriceWords } from '@src/domain.objects/IsoPriceWords';
+import { asIsoPriceShape } from '@src/domain.operations/cast/asIsoPriceShape';
+import { asIsoPriceWords } from '@src/domain.operations/cast/asIsoPriceWords';
 
 /**
  * .what = extracts numeric exponent from exponent string

@@ -1,6 +1,7 @@
 import { BadRequestError, getError } from 'helpful-errors';
 
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+
 import { addPrices, sumPrices } from './sumPrices';
 
 describe('sumPrices', () => {

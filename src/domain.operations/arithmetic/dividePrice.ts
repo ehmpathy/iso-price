@@ -1,12 +1,12 @@
 import { BadRequestError } from 'helpful-errors';
 
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
-import { IsoPriceRoundMode } from '../../domain.objects/IsoPriceRoundMode';
-import type { IsoPriceShape } from '../../domain.objects/IsoPriceShape';
-import type { IsoPriceWords } from '../../domain.objects/IsoPriceWords';
-import { asIsoPriceShape } from '../cast/asIsoPriceShape';
-import { asIsoPriceWords } from '../cast/asIsoPriceWords';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+import { IsoPriceRoundMode } from '@src/domain.objects/IsoPriceRoundMode';
+import type { IsoPriceShape } from '@src/domain.objects/IsoPriceShape';
+import type { IsoPriceWords } from '@src/domain.objects/IsoPriceWords';
+import { asIsoPriceShape } from '@src/domain.operations/cast/asIsoPriceShape';
+import { asIsoPriceWords } from '@src/domain.operations/cast/asIsoPriceWords';
 
 /**
  * .what = gets the numeric exponent value from exponent string
