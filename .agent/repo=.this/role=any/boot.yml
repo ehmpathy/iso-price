@@ -17,6 +17,14 @@ budget:
 
 # each term's say file names its .reason path, so its variants never boot
 briefs:
+  # lookup tables and deep dives: read on demand, not every boot
+  ref:
+    - briefs/define.iso4217-exponent.md
+    - briefs/define.iso4217-currencies.md
+    - briefs/define.price-bigint.md
+    - briefs/define.price-localization.md
+    - briefs/define.si-metric-prefixes.md
+    - briefs/define.currency-symbols-lossy.md
   not:
     - briefs/domain.terms/term=*._.choice.reason.md
     - briefs/domain.terms/term=*._.choice.example=*.md
