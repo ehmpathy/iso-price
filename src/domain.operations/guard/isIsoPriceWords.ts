@@ -1,6 +1,6 @@
 import { BadRequestError } from 'helpful-errors';
 
-import type { IsoPriceWords } from '../../domain.objects/IsoPriceWords';
+import type { IsoPriceWords } from '@src/domain.objects/IsoPriceWords';
 
 /**
  * .what = regex pattern for valid iso-price words format

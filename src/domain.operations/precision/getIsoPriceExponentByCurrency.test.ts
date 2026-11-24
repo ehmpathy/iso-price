@@ -1,4 +1,5 @@
-import { IsoPriceExponent } from '../../domain.objects/IsoPriceExponent';
+import { IsoPriceExponent } from '@src/domain.objects/IsoPriceExponent';
+
 import { getIsoPriceExponentByCurrency } from './getIsoPriceExponentByCurrency';
 
 describe('getIsoPriceExponentByCurrency', () => {

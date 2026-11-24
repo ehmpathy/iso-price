@@ -1,5 +1,5 @@
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
-import { subPrices } from '../arithmetic/subPrices';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+import { subPrices } from '@src/domain.operations/arithmetic/subPrices';
 
 /**
  * .what = checks if first price is numerically greater than second

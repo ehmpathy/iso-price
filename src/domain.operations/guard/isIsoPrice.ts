@@ -1,6 +1,7 @@
 import { BadRequestError } from 'helpful-errors';
 
-import type { IsoPrice } from '../../domain.objects/IsoPrice';
+import type { IsoPrice } from '@src/domain.objects/IsoPrice';
+
 import { isIsoPriceEqual } from './isIsoPriceEqual';
 import { isIsoPriceGreater } from './isIsoPriceGreater';
 import { isIsoPriceHuman } from './isIsoPriceHuman';
